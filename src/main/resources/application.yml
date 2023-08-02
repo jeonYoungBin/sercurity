@@ -1,0 +1,55 @@
+server.port: 31001
+spring:
+  datasource:
+    url: jdbc:h2:tcp://localhost/~/jpashop
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      show_sql: true
+      format_sql: true
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+
+jwt:
+  secretKey: llshlllshlllshlllshl
+endpoint:
+  url: https://codetest.3o3.co.kr/v2/scrap
+springdoc:
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  api-docs:
+    groups:
+      enabled: true
+  swagger-ui:
+    operations-sorter: alpha # alpha(??? ????), method(HTTP????)
+    tags-sorter: alpha # ?? ?? ??
+    path: /swagger-ui.html # html ?? ?? ??
+    disable-swagger-default-url: true
+    display-query-params-without-oauth2: true
+    doc-expansion: none # tag, operation ??? ??
+  paths-to-match:
+    - /**
+
+feign:
+  hystrix:
+    enabled: true
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowType: COUNT_BASED # 어떤 기준으로 집계할지 타입을 정의. 건수:COUNT_BASED | 시간:TIME_BASED
+        waitDurationInOpenState: 10s # 반열림 상태로 전환하기 전에 시킷을 열린 상태로 유지하는 시간.
+        automaticTransitionFromOpenToHalfOpenEnabled: true #대기 시간이 지난 후에 서킷을 반열림 상태로 자동 전환할지, 첫 번째 호출이 들어오길 기다렸다가 반열림 상태로 전환할지를 결정.
+        slidingWindowSize: 4 # 집계 사이즈를 지정한다.
+        failureRateThreshold: 50 #실패한 호출에 대한 임계값(백분율)으로 이 값을 초과하면 서킷 오픈.
+        permittedNumberOfCallsInHalfOpenState: 2 # 반열림 상태에서의 호출 수로, 서킷을 다시 열거나 닫힘 상태로 돌아갈지를 결정할 때 사용.
+    instances:
+      code-service:
+        baseConfig: default

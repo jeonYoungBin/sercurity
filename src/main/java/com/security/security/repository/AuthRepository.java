@@ -33,7 +33,7 @@ public class AuthRepository {
         Boolean flag = false;
 
         List<Pair<String, String>> pairList = new ArrayList<>();
-        pairList.add(Pair.of("홍길동","860824-1655068"));
+        pairList.add(Pair.of("홍길동","900101-1111111"));
         pairList.add(Pair.of("김둘리","921108-1582816"));
         pairList.add(Pair.of("마징가","880601-2455116"));
         pairList.add(Pair.of("배지터","910411-1656116"));

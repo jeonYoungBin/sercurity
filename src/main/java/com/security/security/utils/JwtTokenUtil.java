@@ -1,8 +1,7 @@
-package com.security.security.config;
+package com.security.security.utils;
 
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -12,19 +11,19 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 
-@RequiredArgsConstructor
 @Component
-public class JwtTokenProvider {
+@RequiredArgsConstructor
+public class JwtTokenUtil {
     @Value("${jwt.secretKey}")
     private String secretKey;
 
     // 토큰 유효시간 30분
     private long tokenValidTime = 30 * 60 * 1000L;
 
-    private final UserDetailsService userDetailsService;
 
     @PostConstruct
     protected void init() {
@@ -57,9 +56,12 @@ public class JwtTokenProvider {
 
     public String getMemberInfo(String jwt) throws RuntimeException {
         try {
-            Jws claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwt);
-            String[] split = claims.getBody().toString().split(", ");
-            return split[1].replace("userId=", "");
+//            Jws claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwt);
+//            String[] split = claims.getBody().toString().split(", ");
+//            return split[1].replace("userId=", "");
+            return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwt)
+                    .getBody().get("userId", String.class);
+
         } catch (RuntimeException e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -73,10 +75,10 @@ public class JwtTokenProvider {
         return null;
     }
 
-    public Authentication getAuthentication(String token) {
-        String username = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
-    }
+//    public Authentication getAuthentication(String token) {
+//        String username = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
+//        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+//
+//        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+//    }
 }

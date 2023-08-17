@@ -1,47 +1,41 @@
 package com.security.security.controller;
 
-import com.security.security.config.JwtTokenProvider;
+import com.security.security.utils.JwtTokenUtil;
 import com.security.security.domain.*;
 import com.security.security.domain.request.MemberLoginRequestDto;
 import com.security.security.domain.request.MemberSignupRequestDto;
 import com.security.security.domain.response.ResponseDto;
-import com.security.security.proxy.ExchangeOpenFeign;
 import com.security.security.service.AuthService;
 import com.security.security.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
-import org.springframework.cloud.openfeign.FeignClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.HashMap;
 
 @RestController
 @RequestMapping("/szs")
+@Slf4j
 @AllArgsConstructor
 public class AuthController {
     private final AuthService authService;
     private final MemberService memberService;
     private PasswordEncoder passwordEncoder;
-    private JwtTokenProvider jwtTokenProvider;
+    private JwtTokenUtil jwtTokenProvider;
 
-    @GetMapping("/feign/test")
-    public ResponseDto feignTest() {
-        HashMap<String, String> body = new HashMap<>();
-        body.put("name", "홍길동");
-        body.put("regNo", "860824-1655068");
-//        Object result = exchangeOpenFeign.codeTest("1", body);
-
-        return new ResponseDto(200, "OK", null);
+    @GetMapping("/test")
+    public ResponseDto feignTest(Authentication authentication) {
+        return new ResponseDto(200, "OK", authentication.getName());
     }
 
     /**

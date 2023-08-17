@@ -1,6 +1,6 @@
 package com.security.security.controller;
 
-import com.security.security.config.JwtTokenProvider;
+import com.security.security.utils.JwtTokenUtil;
 import com.security.security.domain.Member;
 import com.security.security.domain.response.ResponseDto;
 import com.security.security.repository.MemberRepository;
@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,8 +26,7 @@ import java.util.HashMap;
 public class MemberController {
     private final MemberService memberService;
     private final AesService aesService;
-    private JwtTokenProvider jwtTokenProvider;
-    private MemberRepository memberRepository;
+    private final MemberRepository memberRepository;
 
     /**
      * 토큰을 이용하여 userId 파싱후 자신의 정보 리턴
@@ -38,13 +38,13 @@ public class MemberController {
             @ApiResponse(responseCode = "206", description = "기타 api 오류", content = @Content(schema = @Schema(implementation = ResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = Error.class)))
     })
-    public ResponseDto findMember(HttpServletRequest request) throws Exception {
-        String token = request.getHeader("Authorization");
+    public ResponseDto findMember(HttpServletRequest request, Authentication authentication) throws Exception {
+        //String token = request.getHeader("Authorization");
         ResponseDto response = new ResponseDto(200, "OK", null);
-        HashMap<String, Object> resulst = new HashMap<>();
         //jwt토큰 파싱
-        String jwtPasingUserId = jwtTokenProvider.getMemberInfo(token.replace("Bearer ", ""));
-        Member findMember = memberService.findOne(jwtPasingUserId);
+        //String jwtPasingUserId = jwtTokenProvider.getMemberInfo(token.replace("Bearer ", ""));
+        String userId = authentication.getName();
+        Member findMember = memberService.findOne(userId);
         findMember.setRegNo(aesService.decrypt(findMember.getRegNo()));
         response.setResult(findMember);
         return response;
@@ -60,14 +60,13 @@ public class MemberController {
             @ApiResponse(responseCode = "206", description = "기타 api 오류", content = @Content(schema = @Schema(implementation = ResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = Error.class)))
     })
-    public ResponseDto userScrap(HttpServletRequest request, HttpServletResponse response1) throws Exception {
+    public ResponseDto userScrap(HttpServletRequest request,
+                                 Authentication authentication) throws Exception {
         String token = request.getHeader("Authorization");
         ResponseDto response = new ResponseDto(200, "OK", null);
 
-
-        //토큰 파싱
-        String jwtPasingUserId = jwtTokenProvider.getMemberInfo(token.replace("Bearer ", ""));
-        Member findMember = memberService.findOne(jwtPasingUserId);
+        String userId = authentication.getName();
+        Member findMember = memberService.findOne(userId);
         String userName = findMember.getName();
         String regNo = aesService.decrypt(findMember.getRegNo()); //주민번호 복호화
 
@@ -88,13 +87,14 @@ public class MemberController {
             @ApiResponse(responseCode = "206", description = "기타 api 오류", content = @Content(schema = @Schema(implementation = ResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = Error.class)))
     })
-    public ResponseDto findRefundMember(HttpServletRequest request) throws Exception {
+    public ResponseDto findRefundMember(HttpServletRequest request, Authentication authentication) throws Exception {
         //jwt토큰 파싱
-        String token = request.getHeader("Authorization");
+        //String token = request.getHeader("Authorization");
         ResponseDto response = new ResponseDto(200, "OK", null);
 
-        String jwtPasingUserId = jwtTokenProvider.getMemberInfo(token.replace("Bearer ", ""));
-        Member findMember = memberService.findOne(jwtPasingUserId);
+        //String jwtPasingUserId = jwtTokenProvider.getMemberInfo(token.replace("Bearer ", ""));
+        String userId = authentication.getName();
+        Member findMember = memberService.findOne(userId);
         HashMap<String, String> refundCalucate = memberService.refundCalucate(findMember);
 
         HashMap<String, Object> resultData = new HashMap<>();

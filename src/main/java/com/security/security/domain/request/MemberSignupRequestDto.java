@@ -5,7 +5,7 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 
-@Getter @Setter
+@Getter
 public class MemberSignupRequestDto {
     @NotNull(message = "아이디를 넣어주세요")
     private String userId;

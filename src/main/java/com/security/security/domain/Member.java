@@ -12,7 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
-@Getter @Setter
+@Getter
 @NoArgsConstructor
 @Entity
 public class Member {
@@ -47,6 +47,7 @@ public class Member {
 
     //퇴직연금
     private Long retirement_pension;
+
     public Member(MemberSignupRequestDto request) {
         this.password = request.getPassword();
         this.name = request.getName();
@@ -54,7 +55,39 @@ public class Member {
         this.userId = request.getUserId();
     }
 
+    public void setRegNo(String regNo) {
+        this.regNo = regNo;
+    }
+
     public void encryptPassword(PasswordEncoder passwordEncoder) {
         password = passwordEncoder.encode(password);
+    }
+
+    public void updateSalary(Long salary) {
+        this.salary = salary;
+    }
+
+    public void updateCalculatedTaxAmount(Long calculated_tax_amount) {
+        this.calculated_tax_amount = calculated_tax_amount;
+    }
+
+    public void updatePremiumExpenses(Long premium_expenses) {
+        this.premium_expenses = premium_expenses;
+    }
+
+    public void updateEducationalExpenses(Long educational_expenses) {
+        this.educational_expenses = educational_expenses;
+    }
+
+    public void updateDonationExpenses(Long donation_expenses) {
+        this.donation_expenses = donation_expenses;
+    }
+
+    public void updateMedicalExpenses(Long medical_expenses) {
+        this.medical_expenses = medical_expenses;
+    }
+
+    public void updateRetirementPension(Long retirement_pension) {
+        this.retirement_pension = retirement_pension;
     }
 }

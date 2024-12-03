@@ -24,7 +24,6 @@ public class JwtTokenUtil {
     // 토큰 유효시간 30분
     private long tokenValidTime = 30 * 60 * 1000L;
 
-
     @PostConstruct
     protected void init() {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
@@ -56,9 +55,6 @@ public class JwtTokenUtil {
 
     public String getMemberInfo(String jwt) throws RuntimeException {
         try {
-//            Jws claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwt);
-//            String[] split = claims.getBody().toString().split(", ");
-//            return split[1].replace("userId=", "");
             return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwt)
                     .getBody().get("userId", String.class);
 
@@ -75,10 +71,4 @@ public class JwtTokenUtil {
         return null;
     }
 
-//    public Authentication getAuthentication(String token) {
-//        String username = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
-//        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-//
-//        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
-//    }
 }

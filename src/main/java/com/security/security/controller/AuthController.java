@@ -13,8 +13,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +36,6 @@ import java.util.HashMap;
 public class AuthController {
     private final AuthService authService;
     private final MemberService memberService;
-    private PasswordEncoder passwordEncoder;
-    private JwtTokenUtil jwtTokenProvider;
 
     @GetMapping("/test")
     public ResponseDto feignTest(Authentication authentication) {
@@ -48,8 +52,8 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = Error.class)))
     })
     @PostMapping(value = "/signup", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseDto signup(@RequestBody @Valid MemberSignupRequestDto request) throws Exception {
-        return new ResponseDto(200, "OK", authService.signup(request));
+    public ResponseEntity<MemberSignupResponse> signup(@RequestBody @Valid MemberSignupRequestDto request) throws Exception {
+        return ResponseEntity.ok(AuthMapper.INSTANCE.of(authService.signup(request)));
     }
 
     /**
@@ -63,18 +67,37 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = Error.class)))
     })
     @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseDto login(@RequestBody MemberLoginRequestDto request) throws IOException {
-        Member members = memberService.findOne(request.getUserId());
-        ResponseDto responseDto = new ResponseDto(200, "OK", null);
-        if(!passwordEncoder.matches(request.getPassword(),members.getPassword())) {
-            responseDto.setCode(205);
-            responseDto.setMessage("잘못된 비밀번호 입니다.");
-            return null;
+    public ResponseEntity<String> login(@RequestBody MemberLoginRequestDto request) throws IOException {
+        return ResponseEntity.ok(memberService.login(request.getUserId(), request.getPassword()));
+    }
+
+    @Getter
+    @Builder
+    static class MemberLoginRequest {
+        private String userId;
+        private String password;
+    }
+
+    @Getter
+    @Builder
+    static class MemberSignupResponse {
+        private Long id;
+        private String userId;
+        private String name;
+        private String regNo;
+
+        public MemberSignupResponse(Long id, String userId, String name, String regNo) {
+            this.id = id;
+            this.userId = userId;
+            this.name = name;
+            this.regNo = regNo;
         }
+    }
 
-        String token = jwtTokenProvider.createToken(members.getUserId(), members.getRegNo());
-        responseDto.setResult(token);
+    @Mapper
+    interface AuthMapper {
+        AuthMapper INSTANCE = Mappers.getMapper(AuthMapper.class);
 
-        return responseDto;
+        MemberSignupResponse of(Member member);
     }
 }

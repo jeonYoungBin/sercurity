@@ -27,29 +27,6 @@ public class AuthRepository {
     }
 
     /**
-     * 가입 가능한 이름&주민번호 체크
-     */
-    public Boolean posibleJoinMember(String name, String regNo) {
-        Boolean flag = false;
-
-        List<Pair<String, String>> pairList = new ArrayList<>();
-        pairList.add(Pair.of("홍길동","900101-1111111"));
-        pairList.add(Pair.of("김둘리","921108-1582816"));
-        pairList.add(Pair.of("마징가","880601-2455116"));
-        pairList.add(Pair.of("배지터","910411-1656116"));
-        pairList.add(Pair.of("손오공","820326-2715702"));
-
-        for (Pair<String, String> pair : pairList) {
-            if (pair.getFirst().equals(name) && pair.getSecond().equals(regNo)) {
-                flag = true;
-                break;
-            }
-        }
-
-        return flag;
-    }
-
-    /**
      * 회원아이디 중복 체크
      */
     public Boolean existById(String userId) {

@@ -2,6 +2,7 @@ package com.security.security.service;
 
 import com.security.security.domain.Member;
 import com.security.security.repository.MemberRepository;
+import com.security.security.utils.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.json.JsonParseException;
 import org.springframework.http.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -25,6 +27,8 @@ public class MemberService {
     @Value("${endpoint.url}")
     private String strapUrl;
     private final MemberRepository memberRepository;
+    private PasswordEncoder passwordEncoder;
+    private JwtTokenUtil jwtTokenProvider;
 
     public Member findOne(String userId) {
         return memberRepository.findById(userId);
@@ -130,5 +134,13 @@ public class MemberService {
         result.put("determined_tax_amount", String.format("%1$,.0f", determined_tax_amount));
 
         return result;
+    }
+
+    public String login(String userId, String password) {
+        Member member = memberRepository.findById(userId);
+        if(!passwordEncoder.matches(password,member.getPassword())) {
+            throw new UsernameNotFoundException("");
+        }
+        return jwtTokenProvider.createToken(userId, password);
     }
 }

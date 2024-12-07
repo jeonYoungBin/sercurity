@@ -1,10 +1,9 @@
 package com.security.security.controller;
 
-import com.security.security.utils.JwtTokenUtil;
 import com.security.security.domain.Member;
 import com.security.security.domain.response.ResponseDto;
 import com.security.security.repository.MemberRepository;
-import com.security.security.service.AesService;
+import com.security.security.utils.AesService;
 import com.security.security.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

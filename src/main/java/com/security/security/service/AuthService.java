@@ -3,12 +3,12 @@ package com.security.security.service;
 import com.security.security.domain.Member;
 import com.security.security.domain.request.MemberSignupRequestDto;
 import com.security.security.repository.AuthRepository;
+import com.security.security.utils.AesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.util.Pair;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class AuthService {
         if(!authRepository.existById(request.getUserId()))
             throw new Exception("중복된 아이디 입니다." + "(" + request.getUserId() + ")");
 
-        if(!posibleJoinMember(request.getName(), request.getRegNo()))
+        if(posibleJoinMember(request.getName(), request.getRegNo()))
             throw new Exception("가입 할수 없는 회원입니다. 이름과 주민번호를 다시 확인해 주세요");
 
         Member member = new Member(request);

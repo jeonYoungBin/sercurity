@@ -2,6 +2,7 @@ package com.security.security.service;
 
 import com.security.security.domain.Member;
 import com.security.security.repository.MemberRepository;
+import com.security.security.utils.AesService;
 import com.security.security.utils.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -27,8 +28,9 @@ public class MemberService {
     @Value("${endpoint.url}")
     private String strapUrl;
     private final MemberRepository memberRepository;
-    private PasswordEncoder passwordEncoder;
-    private JwtTokenUtil jwtTokenProvider;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenUtil jwtTokenProvider;
+    private final AesService aesService;
 
     public Member findOne(String userId) {
         return memberRepository.findById(userId);
@@ -136,11 +138,11 @@ public class MemberService {
         return result;
     }
 
-    public String login(String userId, String password) {
+    public String login(String userId, String password) throws Exception {
         Member member = memberRepository.findById(userId);
         if(!passwordEncoder.matches(password,member.getPassword())) {
             throw new UsernameNotFoundException("");
         }
-        return jwtTokenProvider.createToken(userId, password);
+        return jwtTokenProvider.createToken(userId, aesService.decrypt(member.getRegNo()));
     }
 }

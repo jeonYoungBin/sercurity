@@ -67,8 +67,14 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = Error.class)))
     })
     @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> login(@RequestBody MemberLoginRequestDto request) throws IOException {
-        return ResponseEntity.ok(memberService.login(request.getUserId(), request.getPassword()));
+    public ResponseEntity<TokenResponse> login(@RequestBody MemberLoginRequestDto request) throws Exception {
+        return ResponseEntity.ok(TokenResponse.builder().token(memberService.login(request.getUserId(), request.getPassword())).build());
+    }
+
+    @Getter
+    @Builder
+    static class TokenResponse {
+        private String token;
     }
 
     @Getter

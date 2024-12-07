@@ -1,6 +1,7 @@
 package com.security.security.service;
 
 import com.security.security.domain.Member;
+import com.security.security.domain.MemberRefund;
 import com.security.security.repository.MemberRepository;
 import com.security.security.utils.AesService;
 import com.security.security.utils.JwtTokenUtil;
@@ -38,6 +39,15 @@ public class MemberService {
 
     public Member findByNameAndRegNo(String name, String regNo) {
         return memberRepository.findByNameAndReqNo(name, regNo);
+    }
+
+    public MemberRefund findRefundMember(String userId) {
+        Member findMember = findOne(userId);
+        HashMap<String, String> refundCalculate = refundCalucate(findOne(userId));
+        return MemberRefund.builder().retirementAmount(Long.parseLong(refundCalculate.get("retirement_amount")))
+                .determinedTaxAmount(Long.parseLong(refundCalculate.get("determined_tax_amount")))
+                .name(findMember.getName())
+                .build();
     }
 
     public HashMap<String, Long> findScrapUser(String token, String userName, String regNo) throws Exception {
@@ -99,7 +109,7 @@ public class MemberService {
         }
     }
 
-    public HashMap<String, String> refundCalucate(Member findMember) {
+    private HashMap<String, String> refundCalucate(Member findMember) {
         HashMap<String, String> result = new HashMap<>();
 
         //근로소득세액공제금액 = 산출세액 * 0.55
@@ -144,5 +154,15 @@ public class MemberService {
             throw new UsernameNotFoundException("");
         }
         return jwtTokenProvider.createToken(userId, aesService.decrypt(member.getRegNo()));
+    }
+
+    public Member findAlreadyJoinMember(String userId) {
+        Member findMember = findOne(userId);
+        try {
+            findMember.setRegNo(aesService.decrypt(findMember.getRegNo()));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return findMember;
     }
 }

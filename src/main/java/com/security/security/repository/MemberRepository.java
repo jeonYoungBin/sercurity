@@ -30,7 +30,7 @@ public class MemberRepository {
     }
 
     @Transactional
-    public Member updateMember(String name, String regNo, HashMap<String, Long> scrapUserInfo) {
+    public Member updateMember(String name, HashMap<String, Long> scrapUserInfo) {
         Member findMember = memberJpaDataRepository.findByName(name).orElseThrow();
 
         //산출세액

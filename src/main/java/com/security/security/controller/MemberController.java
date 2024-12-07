@@ -1,6 +1,7 @@
 package com.security.security.controller;
 
 import com.security.security.domain.Member;
+import com.security.security.domain.MemberRefund;
 import com.security.security.domain.response.ResponseDto;
 import com.security.security.repository.MemberRepository;
 import com.security.security.utils.AesService;
@@ -11,12 +12,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 
 @RestController
@@ -37,16 +42,8 @@ public class MemberController {
             @ApiResponse(responseCode = "206", description = "기타 api 오류", content = @Content(schema = @Schema(implementation = ResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = Error.class)))
     })
-    public ResponseDto findMember(HttpServletRequest request, Authentication authentication) throws Exception {
-        //String token = request.getHeader("Authorization");
-        ResponseDto response = new ResponseDto(200, "OK", null);
-        //jwt토큰 파싱
-        //String jwtPasingUserId = jwtTokenProvider.getMemberInfo(token.replace("Bearer ", ""));
-        String userId = authentication.getName();
-        Member findMember = memberService.findOne(userId);
-        findMember.setRegNo(aesService.decrypt(findMember.getRegNo()));
-        response.setResult(findMember);
-        return response;
+    public ResponseEntity<FindMemberResponse> findMember(HttpServletRequest request, Authentication authentication) {
+        return ResponseEntity.ok(MemberResponseMapper.INSTANCE.findMemberResponse(memberService.findAlreadyJoinMember(authentication.getName())));
     }
 
     /**
@@ -59,8 +56,7 @@ public class MemberController {
             @ApiResponse(responseCode = "206", description = "기타 api 오류", content = @Content(schema = @Schema(implementation = ResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = Error.class)))
     })
-    public ResponseDto userScrap(HttpServletRequest request,
-                                 Authentication authentication) throws Exception {
+    public ResponseDto userScrap(HttpServletRequest request, Authentication authentication) throws Exception {
         String token = request.getHeader("Authorization");
         ResponseDto response = new ResponseDto(200, "OK", null);
 
@@ -72,7 +68,7 @@ public class MemberController {
         //스트랩정보 받아온다
         HashMap<String, Long> scrapUserInfo = memberService.findScrapUser(token, userName, regNo);
         if(!scrapUserInfo.isEmpty()) {
-            Member member = memberRepository.updateMember(userName, regNo, scrapUserInfo);
+            Member member = memberRepository.updateMember(userName, scrapUserInfo);
             response.setResult(member);
         }
 
@@ -86,22 +82,44 @@ public class MemberController {
             @ApiResponse(responseCode = "206", description = "기타 api 오류", content = @Content(schema = @Schema(implementation = ResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = Error.class)))
     })
-    public ResponseDto findRefundMember(HttpServletRequest request, Authentication authentication) throws Exception {
-        //jwt토큰 파싱
-        //String token = request.getHeader("Authorization");
-        ResponseDto response = new ResponseDto(200, "OK", null);
+    public ResponseEntity<RefundMemberResponse> findRefundMember(HttpServletRequest request, Authentication authentication) throws Exception {
+        return ResponseEntity.ok(MemberResponseMapper.INSTANCE.refundMemberResponse(memberService.findRefundMember(authentication.getName())));
+    }
 
-        //String jwtPasingUserId = jwtTokenProvider.getMemberInfo(token.replace("Bearer ", ""));
-        String userId = authentication.getName();
-        Member findMember = memberService.findOne(userId);
-        HashMap<String, String> refundCalucate = memberService.refundCalucate(findMember);
+    @Getter
+    static class FindMemberResponse {
+        private Long id;
+        private String userId;
+        private String name;
+        private String regNo;
 
-        HashMap<String, Object> resultData = new HashMap<>();
-        resultData.put("퇴직연금세액공제", refundCalucate.get("retirement_amount"));
-        resultData.put("결정세액", refundCalucate.get("determined_tax_amount"));
-        resultData.put("이름", findMember.getName());
-        response.setResult(resultData);
+        public FindMemberResponse(Long id, String userId, String name, String regNo) {
+            this.id = id;
+            this.userId = userId;
+            this.name = name;
+            this.regNo = regNo;
+        }
+    }
 
-        return response;
+    @Getter
+    static class RefundMemberResponse {
+        private Long retirementAmount;
+        private Long determinedTaxAmount;
+        private String name;
+
+        public RefundMemberResponse(Long retirementAmount, Long determinedTaxAmount, String name) {
+            this.retirementAmount = retirementAmount;
+            this.determinedTaxAmount = determinedTaxAmount;
+            this.name = name;
+        }
+    }
+
+    @Mapper
+    interface MemberResponseMapper {
+        MemberResponseMapper INSTANCE = Mappers.getMapper(MemberResponseMapper.class);
+
+        RefundMemberResponse refundMemberResponse(MemberRefund memberRefund);
+
+        FindMemberResponse findMemberResponse(Member member);
     }
 }

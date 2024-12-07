@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -85,19 +86,13 @@ public class AuthController {
     }
 
     @Getter
-    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     static class MemberSignupResponse {
         private Long id;
         private String userId;
         private String name;
         private String regNo;
-
-        public MemberSignupResponse(Long id, String userId, String name, String regNo) {
-            this.id = id;
-            this.userId = userId;
-            this.name = name;
-            this.regNo = regNo;
-        }
     }
 
     @Mapper
